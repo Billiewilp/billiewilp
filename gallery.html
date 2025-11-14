@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>100</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:Poppins,Arial,sans-serif;
+    color:#fff;
+    overflow:hidden;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    
+  }
+
+  /* 🎥 Video background */
+  video.bg-video{
+    position:fixed;
+    top:0;left:0;width:100%;height:100%;
+    object-fit:cover;
+    z-index:-3;
+    filter:brightness(0.45) saturate(1.2);
+  }
+
+  /* ✨ Nebula & stars */
+  .stars, .nebula1, .nebula2{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    z-index:-2;pointer-events:none;
+  }
+  .stars{
+    background:radial-gradient(2px 2px at 20px 20px,rgba(255,255,255,0.8),transparent 60%),
+               radial-gradient(1.5px 1.5px at 80px 80px,rgba(180,200,255,0.8),transparent 60%);
+    background-repeat:repeat;
+    background-size:200px 200px;
+    animation:twinkle 100s linear infinite;
+  }
+  @keyframes twinkle{from{background-position:0 0;}to{background-position:-2000px 2000px;}}
+  .nebula1{
+    background:radial-gradient(circle at 30% 50%, rgba(100,50,255,0.25), transparent 70%);
+    filter:blur(100px);
+    animation:moveNebula1 90s ease-in-out infinite alternate;
+  }
+  .nebula2{
+    background:radial-gradient(circle at 70% 60%, rgba(255,80,255,0.15), transparent 80%);
+    filter:blur(120px);
+    animation:moveNebula2 120s ease-in-out infinite alternate;
+  }
+  @keyframes moveNebula1{0%{transform:translate(0,0)}100%{transform:translate(-50px,-30px)}}
+  @keyframes moveNebula2{0%{transform:translate(0,0)}100%{transform:translate(40px,60px)}}
+
+  /* 🛰️ Navbar */
+  nav{
+    position:fixed;top:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 30px;
+    background:rgba(0,0,0,0.4);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid rgba(255,255,255,0.1);
+    z-index:10;
+  }
+  nav a{
+    color:#fff;text-decoration:none;font-weight:600;letter-spacing:0.5px;
+  }
+
+  /* Tombol musik */
+  .nav-btn{
+    background:rgba(255,255,255,0.1);
+    border:1px solid rgba(255,255,255,0.3);
+    color:#ffd966;
+    padding:6px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+  }
+  .nav-btn:hover{background:#ffd966;color:#000;box-shadow:0 0 15px #ffd966aa;}
+
+  /* Judul */
+  h1{
+    margin-top:90px;
+    text-align:center;
+    color:#ffd966;
+    text-shadow:0 0 25px #ffd966aa;
+    font-size:1.5rem;
+  }
+
+  /* Tombol Mode */
+  .mode-btn{
+    margin-top:15px;
+    background:#ffd966;
+    color:#000;
+    padding:10px 25px;
+    border:none;
+    border-radius:30px;
+    cursor:pointer;
+    font-weight:700;
+    box-shadow:0 0 20px rgba(255,223,102,0.7);
+    transition:all 0.3s ease;
+    z-index:11;
+  }
+  .mode-btn:hover{box-shadow:0 0 35px rgba(255,223,102,1);transform:scale(1.05);}
+
+  /* Notif */
+  .notif{
+    position:absolute;top:180px;
+    text-align:center;font-weight:600;
+    color:#ffd966;text-shadow:0 0 20px rgba(255,223,102,0.8);
+    opacity:0;transition:opacity 0.6s ease;pointer-events:none;
+  }
+  .notif.show{opacity:1;animation:fadeOut 2.5s forwards;}
+  @keyframes fadeOut{0%,60%{opacity:1}100%{opacity:0;transform:translateY(15px)}}
+
+  /* Gallery */
+  .viewport{
+    width:850px;max-width:92vw;height:480px;
+    perspective:1400px;position:relative;
+    display:flex;justify-content:center;align-items:center;
+  }
+  .slides{
+    width:100%;height:100%;position:relative;
+    transform-style:preserve-3d;
+    transition:transform .6s cubic-bezier(.22,.9,.3,1);
+  }
+  .slides img{
+    position:absolute;left:50%;top:50%;
+    width:240px;height:240px;object-fit:cover;
+    border-radius:20px;transform:translate(-50%,-50%);
+    box-shadow:0 10px 25px rgba(0,0,0,0.5);
+    transition:box-shadow .4s,transform .4s,opacity .4s;
+    opacity:0.8;
+  }
+  .slides img.front{
+    box-shadow:0 0 130px rgba(255,223,102,0.9),0 0 90px rgba(255,223,102,0.6);
+    transform:translate(-50%,-50%) scale(1.08) translateZ(60px);
+    opacity:1;z-index:50;
+  }
+
+  .slides::after{
+    content:"";position:absolute;left:0;right:0;bottom:-120px;height:200px;
+    background:radial-gradient(circle at center,rgba(255,255,160,0.18),transparent 80%);
+    filter:blur(80px);
+  }
+
+  /* Panah */
+  .arrow{
+    position:fixed;top:50%;transform:translateY(-50%);
+    width:50px;height:50px;border-radius:50%;
+    background:rgba(255,255,255,0.1);
+    border:none;color:#ffd966;font-size:20px;cursor:pointer;
+    z-index:20;backdrop-filter:blur(6px);
+  }
+  .arrow:hover{background:#ffd966;color:#000;transform:translateY(-50%) scale(1.1);}
+  #arrow-left{left:40px}
+  #arrow-right{right:40px}
+
+  /* =====================================================
+      RESPONSIVE FOR SMALL SCREENS (HP)
+   ===================================================== */
+@media (max-width: 600px){
+
+  body{
+    overflow: hidden;
+  }
+
+  /* NAVBAR */
+  nav{
+    padding: 10px 18px;
+  }
+  nav a{
+    font-size: 14px;
+  }
+  .nav-btn{
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  /* TITLE */
+  h1{
+    margin-top: 80px;
+    font-size: 1.2rem;
+  }
+  .mode-btn{
+    padding: 8px 18px;
+    font-size: 0.9rem;
+  }
+
+  /* NOTIF */
+  .notif{
+    top: 150px;
+    font-size: 0.9rem;
+  }
+
+  /* VIEWPORT (gallery area) */
+  .viewport{
+    width: 96vw;
+    height: 330px;
+    perspective: 900px;
+    margin-top: 10px;
+  }
+
+  /* GALLERY IMAGES */
+  .slides img{
+    width: 160px;
+    height: 160px;
+    border-radius: 16px;
+  }
+  .slides img.front{
+    transform: translate(-50%, -50%) scale(1.05) translateZ(45px);
+  }
+
+  /* ARROW BUTTONS */
+  .arrow{
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+  #arrow-left{ left: 10px; }
+  #arrow-right{ right: 10px; }
+
+  /* BACKGROUND VIDEO */
+  video.bg-video{
+    filter: brightness(0.38) saturate(1.15);
+  }
+
+  /* REMOVE OVERFLOW ON VERY SMALL SCREEN */
+  @media (max-height: 620px){
+    h1{ margin-top: 70px; }
+    .viewport{ height: 290px; }
+    .slides img{
+      width: 140px;
+      height: 140px;
+    }
+  }
+
+}
+
+
+  
+</style>
+</head>
+<body>
+
+  <!-- 🎥 Background Video -->
+  <video id="bgVideo" class="bg-video" autoplay muted loop>
+    <source src="assets/Stunning Deep Space Nebula - Bebas Rekaman Video Stok.mp4" type="video/mp4">
+  </video>
+
+  <div class="stars"></div>
+  <div class="nebula1"></div>
+  <div class="nebula2"></div>
+
+  <nav>
+    <a href="index.html">⬅ Back to Home</a>
+    <button id="musicBtn" class="nav-btn">🎵 Musik: ON</button>
+  </nav>
+
+  <h1>🌠3D Gallery</h1>
+  <button id="modeBtn" class="mode-btn">🌌 Mode: Auto Rotate</button>
+  <div id="notif" class="notif"></div>
+
+  <div class="viewport">
+    <div class="slides" id="slides">
+      <img src="assets/z3.jpg">
+      <img src="assets/ucing.jpg">
+      <img src="assets/putih.jpg">
+      <img src="assets/banzy.jpg">
+      <img src="assets/haj.jpeg">
+      <img src="assets/sig.jpeg">
+      <img src="assets/four.jpeg">
+    </div>
+  </div>
+
+  <button class="arrow" id="arrow-left">◀</button>
+  <button class="arrow" id="arrow-right">▶</button>
+
+  <!-- 🔊 Suara -->
+  <audio id="beep" src="assets/mixkit-retro-game-notification-212.wav" preload="auto"></audio>
+  <audio id="music" src="assets/space-ambient-cinematic-351304.mp3" preload="auto" loop></audio>
+
+<script>
+const slides = document.getElementById("slides");
+const imgs = [...slides.querySelectorAll("img")];
+const n = imgs.length;
+const step = 360 / n;
+let angle = 0, target = 0;
+let mode = "auto";
+const autoSpeed = 0.17;
+const lerp = 0.12;
+const radius = 420;
+const notif = document.getElementById("notif");
+const beep = document.getElementById("beep");
+const music = document.getElementById("music");
+const modeBtn = document.getElementById("modeBtn");
+
+music.volume = 0.3;
+music.play();
+
+imgs.forEach((img,i)=>{
+  const deg = i * step;
+  img.style.transform = `rotateY(${deg}deg) translateZ(${radius}px) translate(-50%,-50%)`;
+});
+
+function normalize(deg){let r=deg%360;if(r<0)r+=360;return r;}
+function indexFromAngle(a){let r=normalize(-a);return Math.round(r/step)%n;}
+
+function render(){
+  slides.style.transform = `rotateY(${angle}deg)`;
+  imgs.forEach(i=>i.classList.remove("front"));
+  imgs[indexFromAngle(angle)].classList.add("front");
+}
+
+function loop(){
+  if(mode === "auto") target -= autoSpeed;
+  angle += (target - angle) * lerp;
+  render();
+  requestAnimationFrame(loop);
+}
+loop();
+
+function goTo(i){
+  const idx=((i%n)+n)%n;
+  target=-idx*step;
+}
+
+function playBeep(){
+  beep.currentTime = 0;
+  beep.play();
+}
+
+document.getElementById("arrow-left").onclick=()=>{
+  const idx=indexFromAngle(target);
+  goTo(idx-1);
+  playBeep();
+};
+document.getElementById("arrow-right").onclick=()=>{
+  const idx=indexFromAngle(target);
+  goTo(idx+1);
+  playBeep();
+};
+imgs.forEach((img,i)=>img.onclick=()=>{
+  goTo(i);
+  playBeep();
+});
+
+modeBtn.onclick=()=>{
+  playBeep();
+  if(mode === "auto"){
+    mode = "manual";
+    modeBtn.textContent = "✋ Mode: Manual";
+    modeBtn.style.background = "#555";
+    modeBtn.style.color = "#fff";
+    showNotif("✋ Mode Manual Aktif");
+  } else {
+    mode = "auto";
+    modeBtn.textContent = "🌌 Mode: Auto Rotate";
+    modeBtn.style.background = "#ffd966";
+    modeBtn.style.color = "#000";
+    showNotif("🌌 Mode Auto Rotate Aktif");
+  }
+};
+
+function showNotif(text){
+  notif.textContent = text;
+  notif.classList.remove("show");
+  void notif.offsetWidth;
+  notif.classList.add("show");
+}
+
+/* 🎵 Musik ON/OFF */
+let musicOn = true;
+document.getElementById("musicBtn").onclick=()=>{
+  playBeep();
+  const btn = document.getElementById("musicBtn");
+  if(musicOn){
+    music.pause();
+    btn.textContent = "🎵 Musik: OFF";
+    showNotif("🔇 Musik Dimatikan");
+  } else {
+    music.play();
+    btn.textContent = "🎵 Musik: ON";
+    showNotif("🎶 Musik Dinyalakan");
+  }
+  musicOn = !musicOn;
+};
+</script>
+</body>
+</html>
