@@ -158,6 +158,88 @@
   #arrow-left{left:40px}
   #arrow-right{right:40px}
 
+  /* =====================================================
+      RESPONSIVE FOR SMALL SCREENS (HP)
+   ===================================================== */
+@media (max-width: 600px){
+
+  body{
+    overflow: hidden;
+  }
+
+  /* NAVBAR */
+  nav{
+    padding: 10px 18px;
+  }
+  nav a{
+    font-size: 14px;
+  }
+  .nav-btn{
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  /* TITLE */
+  h1{
+    margin-top: 80px;
+    font-size: 1.2rem;
+  }
+  .mode-btn{
+    padding: 8px 18px;
+    font-size: 0.9rem;
+  }
+
+  /* NOTIF */
+  .notif{
+    top: 150px;
+    font-size: 0.9rem;
+  }
+
+  /* VIEWPORT (gallery area) */
+  .viewport{
+    width: 96vw;
+    height: 330px;
+    perspective: 900px;
+    margin-top: 10px;
+  }
+
+  /* GALLERY IMAGES */
+  .slides img{
+    width: 160px;
+    height: 160px;
+    border-radius: 16px;
+  }
+  .slides img.front{
+    transform: translate(-50%, -50%) scale(1.05) translateZ(45px);
+  }
+
+  /* ARROW BUTTONS */
+  .arrow{
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+  #arrow-left{ left: 10px; }
+  #arrow-right{ right: 10px; }
+
+  /* BACKGROUND VIDEO */
+  video.bg-video{
+    filter: brightness(0.38) saturate(1.15);
+  }
+
+  /* REMOVE OVERFLOW ON VERY SMALL SCREEN */
+  @media (max-height: 620px){
+    h1{ margin-top: 70px; }
+    .viewport{ height: 290px; }
+    .slides img{
+      width: 140px;
+      height: 140px;
+    }
+  }
+
+}
+
+
   
 </style>
 </head>
