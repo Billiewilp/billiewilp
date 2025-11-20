@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>2-Layer 3D Gallery Final</title>
+
+<style>
+/* ---- RESET ---- */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:#000;
+  font-family:Poppins,Arial,sans-serif;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:white;
+}
+
+/* ---- BACKGROUND ---- */
+.bg-video{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  object-fit:cover;z-index:-10;
+  filter:brightness(0.45);
+}
+.stars,.nebula1,.nebula2{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:-9;
+}
+.stars{
+  background:
+    radial-gradient(2px 2px at 20px 20px,rgba(255,255,255,.9),transparent 60%),
+    radial-gradient(2px 2px at 80px 80px,rgba(180,200,255,.9),transparent 60%);
+  background-size:200px 200px;
+  animation:twinkle 120s linear infinite;
+}
+@keyframes twinkle{
+  from{background-position:0 0}
+  to{background-position:-2000px 2000px}
+}
+.nebula1{
+  background:radial-gradient(circle at 30% 50%,rgba(100,50,255,0.28),transparent 75%);
+  filter:blur(100px);
+}
+.nebula2{
+  background:radial-gradient(circle at 70% 60%,rgba(255,80,255,0.20),transparent 85%);
+  filter:blur(120px);
+}
+
+/* ---- NAVBAR ---- */
+nav{
+  position:fixed;top:0;left:0;right:0;
+  display:flex;justify-content:space-between;
+  padding:12px 22px;
+  background:rgba(0,0,0,0.35);
+  backdrop-filter:blur(8px);
+  z-index:50;
+}
+nav a{color:#fff;text-decoration:none;font-weight:600}
+.nav-btn{
+  background:rgba(255,255,255,0.1);
+  padding:6px 12px;border-radius:20px;
+  border:1px solid rgba(255,255,255,0.25);
+  color:#ffd966;cursor:pointer;
+}
+.nav-btn:hover{background:#ffd966;color:#000}
+
+/* ---- TITLE ---- */
+h1{
+  margin-top:0px;
+  color:#ffd966;
+  font-size:1.3rem;
+  text-shadow:0 0 18px rgba(255,223,102,0.6);
+}
+#notif{
+  position:fixed;top:150px;left:0;right:0;
+  text-align:center;color:#ffd966;
+  opacity:0;font-weight:700;
+  pointer-events:none;z-index:60;
+}
+#notif.show{animation:showNotif 2.4s forwards}
+@keyframes showNotif{
+  0%{opacity:1}
+  80%{opacity:1}
+  100%{opacity:0;transform:translateY(10px)}
+}
+
+/* ---- GALLERY ---- */
+.gallery-wrap{
+  width:900px;
+  max-width:96vw;
+  height:500px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:40px;
+  margin-top:-25px; /* naik biar bagian bawah terlihat rapi */
+}
+
+/* ---- LAYER VIEWPORT ---- */
+.layer-viewport{
+  width:100%;
+  height:200px;
+  position:relative;
+  perspective:1400px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.layer-middle{height:280px}
+
+/* ---- SLIDES ---- */
+.slides{
+  width:100%;height:100%;
+  position:relative;
+  transform-style:preserve-3d;
+}
+
+/* ---- 200px UNIVERSAL IMAGE ---- */
+.slides img{
+  position:absolute;
+  left:50%;top:50%;
+  width:200px;height:200px;
+  object-fit:cover;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  transition:transform .6s,opacity .4s,box-shadow .4s;
+  opacity:0.85;
+}
+
+/* ---- SIMETRIS PERFECT ---- */
+/* TOP LAYER: lebih tinggi 120px */
+.layer-top .slides img{
+  transform:translateY(-120px) rotateX(12deg);
+}
+
+/* MIDDLE LAYER: center */
+.layer-middle .slides img{
+  transform:translateY(0px) rotateX(0deg);
+}
+
+/* ---- FRONT IMAGE EFFECT ---- */
+.layer-top .slides img.front{
+  transform:translateY(-120px) rotateX(12deg) translateZ(40px) scale(1.25);
+  opacity:1;
+  box-shadow:0 0 80px rgba(140,150,255,0.85);
+}
+.layer-middle .slides img.front{
+  transform:translateY(0px) rotateX(0deg) translateZ(70px) scale(1.25);
+  opacity:1;
+  box-shadow:0 0 120px rgba(255,223,102,0.9);
+}
+
+/* ---- BUTTON HORIZONTAL ---- */
+.btn-hr{
+  position:fixed;top:50%;transform:translateY(-50%);
+  width:56px;height:56px;border-radius:50%;
+  background:rgba(255,255,255,0.1);
+  border:none;color:#ffd966;
+  cursor:pointer;font-size:20px;
+  backdrop-filter:blur(6px);
+  box-shadow:0 6px 18px rgba(0,0,0,0.5);
+  transition:.25s;z-index:80;
+}
+.btn-hr:hover{background:#ffd966;color:#000;transform:translateY(-50%) scale(1.1)}
+.btn-left{left:30px}
+.btn-right{right:30px}
+
+/* ---- BUTTON VERTICAL (UP ONLY) ---- */
+.controls-bottom{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:24px;display:flex;gap:14px;z-index:80;
+}
+.btn-vert{
+  width:56px;height:56px;border-radius:50%;
+  background:rgba(255,255,255,0.1);
+  border:none;color:#ffd966;
+  cursor:pointer;font-size:20px;
+  backdrop-filter:blur(6px);
+  box-shadow:0 6px 18px rgba(0,0,0,0.5);
+  transition:.25s;
+}
+.btn-vert:hover{background:#ffd966;color:#000;transform:scale(1.1)}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width:720px){
+  .gallery-wrap{gap:20px;margin-top:-10px; margin-left:-1px;}
+  .layer-viewport{height:160px}
+  .layer-middle{height:230px}
+
+  .slides img{
+    width:150px;height:150px;
+  }
+
+  .btn-hr,.btn-vert{
+    width:46px;height:46px;font-size:18px;
+  }
+  .btn-left{left:14px}
+  .btn-right{right:14px}
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ==== BACKGROUND ==== -->
+<video class="bg-video" autoplay muted loop playsinline>
+  <source src="assets/Stunning Deep Space Nebula - Bebas Rekaman Video Stok.mp4" type="video/mp4">
+</video>
+
+<div class="stars"></div>
+<div class="nebula1"></div>
+<div class="nebula2"></div>
+
+<!-- ==== NAV ==== -->
+<nav>
+  <a href="index.html">⬅ Kembali</a>
+  <button id="musicBtn" class="nav-btn">🎵 Musik: ON</button>
+</nav>
+
+<h1>🌌 Gallery Billie</h1>
+<div id="notif"></div>
+
+<!-- ==================================================
+     GALLERY 2 LAYER (TOP + MIDDLE)
+=================================================== -->
+<div class="gallery-wrap">
+
+  <!-- ========= LAYER ATAS ========= -->
+  <div class="layer-viewport layer-top" id="viewportTop">
+    <div class="slides" id="slidesTop">
+      <img src="assets/f1.jpeg">
+      <img src="assets/f2.jpeg">
+      <img src="assets/f3.jpeg">
+      <img src="assets/f4.jpeg">
+      <img src="assets/f7.jpeg">
+      <img src="assets/f6.jpeg">
+      <img src="assets/f5.jpeg">
+    </div>
+  </div>
+
+  <!-- ========= LAYER TENGAH ========= -->
+  <div class="layer-viewport layer-middle" id="viewportMid">
+    <div class="slides" id="slidesMid">
+      <img src="assets/z3.jpg">
+      <img src="assets/ucing.jpg">
+      <img src="assets/putih.jpg">
+      <img src="assets/banzy.jpg">
+      <img src="assets/haj.jpeg">
+      <img src="assets/sig.jpeg">
+      <img src="assets/four.jpeg">
+    </div>
+  </div>
+
+</div><!-- end gallery wrap -->
+
+<!-- ==== HORIZONTAL BUTTONS ==== -->
+<button class="btn-hr btn-left" id="btnLeft">◀</button>
+<button class="btn-hr btn-right" id="btnRight">▶</button>
+
+<!-- ==== ONLY UP BUTTON ==== -->
+<div class="controls-bottom">
+  <button class="btn-vert" id="btnUp">▲</button>
+  <button class="btn-vert" id="btnDown">▼</button>
+</div>
+
+
+<!-- ==== AUDIO ==== -->
+<audio id="beep" src="assets/mixkit-retro-game-notification-212.wav" preload="auto"></audio>
+<audio id="music" src="assets/space-ambient-cinematic-351304.mp3" preload="auto" loop></audio>
+<script>
+/* ============================================
+   2-LAYER 3D GALLERY — FINAL ENGINE
+============================================ */
+
+/* Ambil elemen layer */
+const slidesTop  = document.getElementById("slidesTop");
+const slidesMid  = document.getElementById("slidesMid");
+
+const imgsTop = [...slidesTop.querySelectorAll("img")];
+const imgsMid = [...slidesMid.querySelectorAll("img")];
+
+/* Variabel inti */
+let angle = 0;
+let target = 0;
+const step = 360 / imgsMid.length;
+const autoSpeed = 0.20;
+const lerp = 0.12;
+
+let mode = "auto";
+
+/* Radius */
+const RADIUS_TOP = 260;
+const RADIUS_MID = 420;
+
+/* Scale */
+const SCALE_TOP = 0.9;
+const SCALE_MID = 1.0;
+
+/* Audio */
+const beep  = document.getElementById("beep");
+const music = document.getElementById("music");
+music.volume = 0.35;
+music.play();
+
+/* Notif */
+const notif = document.getElementById("notif");
+function showNotif(t){
+  notif.textContent = t;
+  notif.classList.remove("show");
+  void notif.offsetWidth;
+  notif.classList.add("show");
+}
+
+/* ============================================
+   POSISI AWAL ROTASI 3D
+============================================ */
+
+imgsTop.forEach((img,i)=>{
+  img.style.transform = `rotateY(${i*step}deg) translateZ(${RADIUS_TOP}px)`;
+});
+imgsMid.forEach((img,i)=>{
+  img.style.transform = `rotateY(${i*step}deg) translateZ(${RADIUS_MID}px)`;
+});
+
+/* ============================================
+   UPDATE POSISI SETIAP LAYER
+============================================ */
+
+function updateLayerPositions(imgsArray, radius, baseScale, layer){
+  
+  imgsArray.forEach((img,i)=>{
+
+    const deg = i * step;
+    const rot = deg + angle;
+    const rad = (rot * Math.PI) / 180;
+
+    const x = Math.sin(rad) * radius;
+    const z = Math.cos(rad) * radius;
+
+    let shiftY = 0;
+    let tilt   = 0;
+
+    if(layer === "top"){
+      shiftY = -70;
+      tilt   = 12;
+    }
+    else if(layer === "mid"){
+      shiftY = 0;
+      tilt   = 0;
+    }
+
+    img.style.transform = `
+      translateX(${x}px)
+      translateZ(${z}px)
+      translateY(${shiftY}px)
+      rotateX(${tilt}deg)
+      scale(${baseScale})
+    `;
+
+    img.dataset._z = z;
+  });
+}
+
+/* ============================================
+   TENTUKAN GAMBAR DEPAN
+============================================ */
+
+function detectFront(imgsArray){
+  let frontIndex = 0;
+  let maxZ = -999999;
+
+  imgsArray.forEach((img,idx)=>{
+    let z = parseFloat(img.dataset._z || "0");
+    if(z > maxZ){
+      maxZ = z;
+      frontIndex = idx;
+    }
+  });
+
+  imgsArray.forEach(i=>i.classList.remove("front"));
+  imgsArray[frontIndex].classList.add("front");
+}
+
+/* ============================================
+   RENDER LOOP
+============================================ */
+
+function render(){
+  updateLayerPositions(imgsTop, RADIUS_TOP, SCALE_TOP, "top");
+  updateLayerPositions(imgsMid, RADIUS_MID, SCALE_MID, "mid");
+
+  detectFront(imgsTop);
+  detectFront(imgsMid);
+}
+
+function loop(){
+  if(mode === "auto") target -= autoSpeed;
+  angle += (target - angle) * lerp;
+
+  render();
+  requestAnimationFrame(loop);
+}
+loop();
+
+/* ============================================
+   GO TO INDEX (PUTAR KE FOTO)
+============================================ */
+function goTo(idx){
+  target = -idx * step;
+  playBeep();
+}
+function playBeep(){
+  beep.currentTime = 0;
+  beep.play();
+}
+
+/* ============================================
+   CLICK FOTO = PUTAR KE FOTO ITU
+============================================ */
+imgsTop.forEach((img,i)=> img.onclick = ()=> goTo(i));
+imgsMid.forEach((img,i)=> img.onclick = ()=> goTo(i));
+
+/* ============================================
+   TOMBOL KIRI & KANAN
+============================================ */
+document.getElementById("btnLeft").onclick = ()=>{
+  const idx = Math.round((-target) / step);
+  goTo(idx - 1);
+};
+
+document.getElementById("btnRight").onclick = ()=>{
+  const idx = Math.round((-target) / step);
+  goTo(idx + 1);
+};
+
+/* ============================================
+   TOMBOL ▲ (FOCUS LAYER TOP)
+============================================ */
+
+document.getElementById("btnUp").onclick = ()=>{
+  playBeep();
+  showNotif("🔼 Fokus ke Layer ATAS");
+
+  /* highlight smooth */
+  document.querySelector(".layer-top").style.opacity    = "1";
+  document.querySelector(".layer-middle").style.opacity = "0.7";
+
+  document.getElementById("btnDown").onclick = ()=>{
+  playBeep();
+  showNotif("🔽 Fokus ke Layer TENGAH");
+
+  document.querySelector(".layer-top").style.opacity    = "0.6";
+  document.querySelector(".layer-middle").style.opacity = "1";
+};
+
+
+  /* layer top glow lebih terlihat */
+};
+
+/* ============================================
+   MUSIC TOGGLE
+============================================ */
+document.getElementById("musicBtn").onclick = ()=>{
+  playBeep();
+
+  if(music.paused){
+    music.play();
+    musicBtn.textContent = "🎵 Musik: ON";
+    showNotif("🎶 Musik dihidupkan");
+  } else {
+    music.pause();
+    musicBtn.textContent = "🎵 Musik: OFF";
+    showNotif("🔇 Musik dimatikan");
+  }
+};
+
+/* ============================================ */
+</script>
+</body>
+</html>

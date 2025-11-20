@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>100</title>
+  <style>
+    :root{
+      --bg:#060609;
+      --muted:#bfbfbf;
+      --accent:#ffd700;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family: "Poppins", system-ui, sans-serif;
+      background:var(--bg);
+      color:#fff;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* NAV */
+    nav{
+      position:fixed;left:0;right:0;top:0;
+      height:64px;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 28px;
+      background:rgba(0,0,0,0.55);
+      backdrop-filter:blur(8px);
+      z-index:1200;
+      border-bottom:1px solid rgba(255,255,255,0.03);
+    }
+    nav .brand{font-weight:700;letter-spacing:0.6px}
+    nav a{
+      color:var(--accent);text-decoration:none;padding:8px 14px;border-radius:20px;
+      background:rgba(255,255,255,0.03);font-weight:600;
+    }
+    nav a:hover{background:rgba(255,255,255,0.06)}
+
+    /* SECTION */
+    section{
+      position:relative;
+      min-height:100vh;
+      padding:120px 6%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    /* background video (parallax-capable) */
+    video.bg{
+      position:absolute;inset:0;width:120%;height:120%;object-fit:cover;z-index:-2;
+      /* brighter & slightly more saturated so the background is clearer */
+      filter:brightness(0.7) saturate(1.05) contrast(1.02);
+      transform:translateY(0);
+      transition:transform .8s linear;
+    }
+    .overlay{
+      position:absolute;inset:0;
+      /* make overlay lighter so video shows through more — tweak these rgba stops to taste */
+      background:linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.45));
+      z-index:-1;
+    }
+
+    /* container: alternate layout left/right */
+    .wrap{
+      width:100%;
+      max-width:1200px;
+      display:flex;
+      gap:36px;
+      align-items:center;
+      justify-content:space-between;
+      transition:transform .6s ease,opacity .6s ease;
+      opacity:0;
+      transform:translateY(40px);
+    }
+
+    /* Animated entry states - will be toggled by JS */
+    .enter-left{ transform:translateX(-80px); opacity:0; }
+    .enter-right{ transform:translateX(80px); opacity:0; }
+    .visible { transform:translateX(0) translateY(0); opacity:1; transition: transform 2s ease, opacity 2s ease;
+ }
+
+    /* video box 1:1 */
+    .media {
+      width:380px; height:380px; flex:0 0 380px;
+      display:block;
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 10px 40px rgba(0,0,0,0.6), 0 0 40px rgba(255,215,0,0.04);
+    }
+    .media video{
+      width:100%; height:100%; object-fit:cover; display:block;
+      transform-origin:center center;
+    }
+
+    /* text area */
+    .txt{
+      flex:1;
+      color:var(--muted);
+      line-height:1.6;
+    }
+    .txt h2{
+      color:var(--accent);
+      margin-bottom:10px;
+      font-size:2.1rem;
+    }
+    .txt p{font-size:1rem;margin-bottom:18px}
+    .btn{
+      display:inline-block;padding:10px 22px;border-radius:999px;background:var(--accent);color:#000;font-weight:700;border:none;cursor:pointer;
+      box-shadow:0 8px 20px rgba(255,215,0,0.08);
+    }
+    .btn:hover{transform:translateY(-3px);transition:all .18s ease}
+
+    /* popup gallery */
+    .popup{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:1400;padding:32px;
+      opacity:0;transition:opacity .25s ease;
+    }
+    .popup.active{display:flex;opacity:1}
+    .popup-card{
+      width:100%;max-width:980px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+      border-radius:14px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,0.6);
+      transform:translateY(8px);animation:pop .35s ease both;
+    }
+    @keyframes pop{from{transform:translateY(30px) scale(.98);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+
+    .popup-card h3{color:var(--accent);margin-bottom:12px}
+    .close-x{position:absolute;right:22px;top:18px;background:transparent;border:none;color:#fff;font-size:26px;cursor:pointer}
+    .gallery{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px;
+    }
+    /* make gallery thumbnails maintain a 1:1 (square) aspect ratio */
+    .gallery img,.gallery video{
+      width:100%;
+      aspect-ratio:1/1; /* enforces square */
+      height:auto; /* let aspect-ratio determine height */
+      object-fit:cover;
+      border-radius:10px;
+      display:block;
+    }
+
+    .close-row{text-align:center;margin-top:14px}
+    .close-row .close-btn{background:#ff4b4b;color:#fff;padding:10px 18px;border-radius:10px;border:none;cursor:pointer}
+
+    /* small screens: stack, media becomes full width but square */
+    @media (max-width:900px){
+      .wrap{flex-direction:column-reverse;gap:18px}
+      .media{width:84vw;height:84vw;max-width:420px;max-height:420px}
+      section{padding:100px 5%}
+      .txt h2{font-size:1.6rem}
+  /* keep thumbnails square on small screens as well */
+  .gallery img,.gallery video{aspect-ratio:1/1;height:auto}
+    }
+
+    /* ================================
+   ❗ RESPONSIVE FOR SMALL SCREENS
+   ================================ */
+@media (max-width: 600px){
+
+  /* NAV */
+  nav{
+    height: 56px;
+    padding: 0 18px;
+  }
+  nav .brand{ font-size: 15px; }
+  nav a{ font-size: 13px; padding: 6px 12px; }
+
+  /* SECTION */
+  section{
+    padding: 100px 5%;
+    min-height: auto;
+  }
+
+  /* WRAP STACKING */
+  .wrap{
+    flex-direction: column !important;
+    gap: 14px;
+    text-align: center;
+  }
+
+  /* MEDIA BOX FIX — biar tidak besar */
+  .media{
+    width: 88vw;
+    height: 88vw;
+    max-width: 380px;
+    max-height: 380px;
+    border-radius: 16px;
+  }
+
+  /* TEXT SCALE */
+  .txt h2{
+    font-size: 1.4rem;
+    margin-bottom: 6px;
+  }
+  .txt p{
+    font-size: .92rem;
+    line-height: 1.45;
+  }
+
+  /* BUTTON */
+  .btn{
+    padding: 9px 20px;
+    font-size: .9rem;
+  }
+
+  /* POPUP FULLSCREEN OPTIMIZE */
+  .popup{
+    padding: 14px;
+    align-items: start;
+    padding-top: 80px;
+  }
+
+  .popup-card{
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .popup-card h3{
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  .close-x{
+    top: 15px;
+    right: 15px;
+    font-size: 22px;
+  }
+
+  /* GALLERY GRID FIT BETTER */
+  .gallery{
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+  }
+
+  .gallery img,
+  .gallery video{
+    aspect-ratio: 1/1;
+    border-radius: 8px;
+  }
+}
+
+
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="brand">My Hobbies</div>
+    <a href="index.html">⬅ Kembali</a>
+  </nav>
+
+  <!-- MUSIC (index 0 => enters from left) -->
+  <section id="music" data-index="0">
+    <video class="bg" autoplay muted loop playsinline data-speed="0.25">
+      <source src="assets/gitar.mp4" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+
+    <div class="wrap enter-left">
+      <div class="media">
+        <!-- main video: autoplay, muted, loop, no controls, playsinline -->
+        <video autoplay muted loop playsinline>
+          <source src="assets/gitar.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="txt">
+        <h2>🎵 Music</h2>
+        <p>Suka banget sama music,kalo lagi seneng,marah,ataupun sedih,music solusinya,kadang suka ngelampiasin ke main gitar sampe suaranya kenceng banget,maafin aku tetangga....</p>
+        <button class="btn" onclick="openGallery('music')">Lihat lainnya</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VOLLY (index 1 => enters from right) -->
+  <section id="volly" data-index="1">
+    <video class="bg" autoplay muted loop playsinline data-speed="0.2">
+      <source src="assets/nyemessore.mp4" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+
+    <div class="wrap enter-right" style="flex-direction:row-reverse">
+      <div class="media">
+        <video autoplay muted loop playsinline>
+          <source src="assets/nyemessore.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="txt">
+        <h2>🏐 Volly</h2>
+        <p>Masuk SMK KAHIANG ini lewat jalur volly,dulu setiap sore pulang sekolah selalu volly dulu,sekarang susah :( banyak tugas dan harus belajar biar ngerti pelajaran nya.</p>
+        <button class="btn" onclick="openGallery('volly')">Lihat lainnya</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME (index 2 => enters from left) -->
+  <section id="game" data-index="2">
+    <video class="bg" autoplay muted loop playsinline data-speed="0.22">
+      <source src="assets/The last of us 2 remastered no return Ellie stealth brutal combat _ Tlou remake Ps5 4k best scenes.mp4" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+
+    <div class="wrap enter-left">
+      <div class="media">
+        <video autoplay muted loop playsinline>
+          <source src="assets/The last of us 2 remastered no return Ellie stealth brutal combat _ Tlou remake Ps5 4k best scenes.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="txt">
+        <h2>🎮 Game</h2>
+        <p>ini naikin mood kalau udah cape sama tugas sih,cinta banget pokok nya,apalagi kalo main sama temen-temen.</p>
+        <button class="btn" onclick="openGallery('game')">Lihat lainnya</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- POPUPS / GALLERIES -->
+  <div class="popup" id="gallery-music" aria-hidden="true">
+    <div class="popup-card">
+      <button class="close-x" onclick="closeGallery('music')">✕</button>
+      <h3>🎶 Music Gallery</h3>
+      <div class="gallery">
+        <video muted autoplay loop>
+          <source src="assets/gitar.mp4" type="video/mp4">
+        </video>
+        <video muted autoplay loop>
+          <source src="assets/skul.mp4" type="video/mp4">
+        </video>
+        <video muted autoplay loop>
+          <source src="assets/matang.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="close-row"><button class="close-btn" onclick="closeGallery('music')">Tutup</button></div>
+    </div>
+  </div>
+
+  <div class="popup" id="gallery-volly" aria-hidden="true">
+    <div class="popup-card">
+      <button class="close-x" onclick="closeGallery('volly')">✕</button>
+      <h3>🏐 Volly Gallery</h3>
+      <div class="gallery">
+        <img src="assets/polisore.jpg" alt="volly 1">
+        <video autoplay muted loop>
+          <source src="assets/gor.mp4" type="video/mp4">
+        </video>
+       <video  autoplay muted loop>
+          <source src="assets/nyemessore.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="close-row"><button class="close-btn" onclick="closeGallery('volly')">Tutup</button></div>
+    </div>
+  </div>
+
+  <div class="popup" id="gallery-game" aria-hidden="true">
+    <div class="popup-card">
+      <button class="close-x" onclick="closeGallery('game')">✕</button>
+      <h3>🎮 Game Gallery</h3>
+      <div class="gallery">
+        <img src="assets/ff.jpg" alt="game 1">
+        <video muted autoplay loop>
+          <source src="assets/The last of us 2 remastered no return Ellie stealth brutal combat _ Tlou remake Ps5 4k best scenes.mp4" type="video/mp4">
+        </video>
+        <video muted autoplay loop >
+          <source src="assets/tomb.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="close-row"><button class="close-btn" onclick="closeGallery('game')">Tutup</button></div>
+    </div>
+  </div>
+
+  <script>
+    // --- scroll reveal + alternate left/right animation assignment ---
+    const sections = document.querySelectorAll('section');
+    const observerOptions = { root: null, rootMargin: '0px', threshold: 0.18 };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const wrap = entry.target.querySelector('.wrap');
+        if (!wrap) return;
+        if (entry.isIntersecting) {
+          // add visible + ensure correct class for direction
+          wrap.classList.add('visible');
+        } else {
+          // remove to allow re-play when scrolling back
+          wrap.classList.remove('visible');
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach((sec, idx) => {
+      // set initial enter-left / enter-right based on index (alternate)
+      const wrap = sec.querySelector('.wrap');
+      if (wrap) {
+        if (idx % 2 === 0) {
+          wrap.classList.add('enter-left');
+        } else {
+          wrap.classList.add('enter-right');
+        }
+      }
+      observer.observe(sec);
+    });
+
+    // --- parallax for background videos (subtle) ---
+    const bgVideos = document.querySelectorAll('video.bg');
+    window.addEventListener('scroll', () => {
+      bgVideos.forEach(v => {
+        const speed = parseFloat(v.getAttribute('data-speed') || 0.22);
+        const rect = v.closest('section').getBoundingClientRect();
+        const offset = (rect.top) * speed;
+        v.style.transform = `translateY(${offset}px)`;
+      });
+    }, { passive: true });
+
+    // --- gallery open/close ---
+    function openGallery(name){
+      const id = {music:'gallery-music', volly:'gallery-volly', game:'gallery-game'}[name];
+      if(!id) return;
+      const pop = document.getElementById(id);
+      pop.classList.add('active');
+      pop.setAttribute('aria-hidden','false');
+      // prevent body scroll
+      document.body.style.overflow = 'hidden';
+    }
+    function closeGallery(name){
+      const id = {music:'gallery-music', volly:'gallery-volly', game:'gallery-game'}[name];
+      if(!id) return;
+      const pop = document.getElementById(id);
+      pop.classList.remove('active');
+      pop.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    // close popup when clicking outside the card
+    document.querySelectorAll('.popup').forEach(p=>{
+      p.addEventListener('click', (e)=>{
+        if(e.target === p){
+          p.classList.remove('active');
+          p.setAttribute('aria-hidden','true');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // Ensure mobile autoplay: try to play all inline videos
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('video[autoplay]').forEach(v=>{
+        v.muted = true;
+        v.playsInline = true;
+        // some browsers require play() call
+        const playPromise = v.play();
+        if (playPromise !== undefined){
+          playPromise.catch(()=>{/* ignore */});
+        }
+      });
+    });
+  </script>
+</body>
+</html>
